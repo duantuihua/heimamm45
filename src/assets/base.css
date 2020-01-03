@@ -1,0 +1,49 @@
+/* 初始化代码 */
+p,a,
+input,img,
+div,span,
+ul,li,
+h1,h2,
+h3,h4,
+strong,b,
+ins,u,
+del,s,
+em,i,
+body {
+    margin: 0;
+    padding: 0;
+}
+a {
+    text-decoration: none;
+    color: #000;
+}
+img {
+    border: none;
+    /* 控制行内块元素与文字中线对齐 */
+    vertical-align: middle;
+}
+li {
+    list-style: none;
+}
+body {
+    font-size: 12px;
+    line-height: 1;
+}
+i {
+    font-style: normal;
+}
+input {
+    border: none;
+    outline: none;
+}
+/* 清除浮动影响 */
+.clearfix::after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+.clearfix {
+    *zoom: 1;
+}

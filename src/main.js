@@ -1,8 +1,18 @@
 import Vue from 'vue'
 import App from './App.vue'
+import router from './router/index/index'
+
+// 导入 element-ui 插件
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+import './assets/base.css';
+
+Vue.use(ElementUI);
 
 Vue.config.productionTip = false
 
 new Vue({
   render: h => h(App),
+  // 在Vue 实例中挂载路由
+  router
 }).$mount('#app')

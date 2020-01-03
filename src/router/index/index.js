@@ -7,6 +7,8 @@ import VueRouter from 'vue-router';
 Vue.use(VueRouter);
 
 // 3 导入路由组件
+import login from '../../views/login/login'
+import index from '../../views/index/index'
 
 
 // 解决同一路由第二次访问会报错的问题
@@ -19,6 +21,8 @@ VueRouter.prototype.push = function push(location) {
 const router = new VueRouter({
     // 5. 定义路由
     routes: [
+        {path:'/',component:login},
+        {path:'/index',component:index},
     ]
 })
 
