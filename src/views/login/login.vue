@@ -64,64 +64,70 @@
       class="dialog_header"
       top="10vh"
     >
-      <!-- 头像上传 -->
-      <el-upload
-        class="avatar-uploader"
-        action="https://jsonplaceholder.typicode.com/posts/"
-        :show-file-list="false"
-        :on-success="handleAvatarSuccess"
-        :before-upload="beforeAvatarUpload"
-      >
-        <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-      </el-upload>
       <!-- 用户注册的表单验证 -->
       <el-form
-        :model="ruleForm"
-        :rules="rules"
+        :model="registerForm"
+        :rules="registerRules"
         ref="ruleForm"
         class="demo-ruleForm"
         label-width="65px"
       >
+        <el-form-item label="头像" prop="photo">
+          <!-- 头像上传 -->
+          <!-- :action 绑顶文件上传地址 -->
+          <el-upload
+            class="avatar-uploader"
+            name="image"
+            :action="filePath"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <!-- 绑定图片的地址 -->
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
+
         <el-form-item label="昵称" prop="nickname" class="nickname">
-          <el-input v-model="ruleForm.nickname"></el-input>
+          <el-input v-model="registerForm.nickname"></el-input>
         </el-form-item>
         <el-form-item label="邮箱" prop="email" class="email">
-          <el-input v-model="ruleForm.email"></el-input>
+          <el-input v-model="registerForm.email"></el-input>
         </el-form-item>
         <el-form-item label="手机" prop="phone" class="phone1">
-          <el-input v-model="ruleForm.phone"></el-input>
+          <el-input v-model="registerForm.phone"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password" class="password1">
-          <el-input v-model="ruleForm.password"></el-input>
+          <el-input v-model="registerForm.password"></el-input>
         </el-form-item>
 
         <el-row>
           <el-col :span="18">
             <el-form-item label="图形码" prop="code" class="code">
-              <el-input v-model="ruleForm.code"></el-input>
+              <el-input v-model="registerForm.code"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <img :src="codeURL" class="codeImg" />
+            <img :src="graphic" class="codeImg" @click="graphicChange" />
           </el-col>
         </el-row>
 
         <el-row>
           <el-col :span="18">
             <el-form-item label="验证码" prop="QRcode" class="QRcode">
-              <el-input v-model="ruleForm.QRcode"></el-input>
+              <el-input v-model="registerForm.QRcode"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-button>获取用户验证码</el-button>
+            <el-button @click="getERcode" :disabled="delayed!=0">{{btnMessage}}</el-button>
           </el-col>
         </el-row>
       </el-form>
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button type="primary" @click="loginSuccess('ruleForm')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -153,23 +159,63 @@ var emailReg = (rule, value, callback) => {
   }
 };
 
-import {login} from "../../api/login";
+import { login, register, sendsms } from "../../api/login";
 
 export default {
   data() {
     return {
       codeURL:
         process.env.VUE_APP_BASEURL + "/captcha?type=login&t=" + Math.random(),
+      graphic:
+        process.env.VUE_APP_BASEURL +
+        "/captcha?type=sendsms&t=" +
+        Math.random(),
+
       checked: false,
+      // 图片地址
       imageUrl: "",
+      // 文件上传地址
+      filePath: process.env.VUE_APP_BASEURL + "/uploads",
+      rcode: "",
+      avatarURL: "",
+      // 发送按钮信息
+      btnMessage: "获取验证码",
+      delayed: "",
+       // Dialog 对话框
+      dialogFormVisible: false,
       ruleForm: {
         phone: "",
         password: "",
-        code: "",
-        nickname: "",
-        email: ""
+        code: ""
       },
+
+      // 用户注册
+      registerForm: {
+        phone: "",
+        password: "",
+        code: "",
+        // 用户名
+        nickname: "",
+        email: "",
+        // 头像
+        photo: ""
+      },
+
+      // 用户登录
       rules: {
+        password: [
+          { required: true, message: "请输入密码", trigger: "blur" },
+          { min: 6, max: 12, message: "长度在 6 到 12 个字符", trigger: "blur" }
+        ],
+        code: [
+          { required: true, message: "请输入验证码", trigger: "blur" },
+          { min: 4, max: 4, message: "长度为4 个字符", trigger: "blur" }
+        ],
+        phone: [{ required: true, validator: phoneReg, trigger: "blur" }]
+      },
+
+      registerRules: {
+        photo: [{ message: "请选择头像", trigger: "change" }],
         password: [
           { required: true, message: "请输入密码", trigger: "blur" },
           { min: 6, max: 12, message: "长度在 6 到 12 个字符", trigger: "blur" }
@@ -185,9 +231,7 @@ export default {
         phone: [{ required: true, validator: phoneReg, trigger: "blur" }],
         email: [{ required: true, validator: emailReg, trigger: "blur" }]
       },
-
-      // Dialog 对话框
-      dialogFormVisible: false
+     
     };
   },
   methods: {
@@ -201,7 +245,7 @@ export default {
             return;
           }
           // axios 发送请求
-          login({                                                                                                                                                                                               
+          login({
             phone: this.ruleForm.phone,
             password: this.ruleForm.password,
             code: this.ruleForm.code
@@ -236,10 +280,18 @@ export default {
       this.codeURL =
         process.env.VUE_APP_BASEURL + "/captcha?type=login&t=" + Math.random();
     },
-
+    graphicChange() {
+      this.graphic =
+        process.env.VUE_APP_BASEURL + "/captcha?type=sendsms&t=" + Date.now();
+    },
     // 文件上传
     handleAvatarSuccess(res, file) {
+      // 生成本地的临时路径
       this.imageUrl = URL.createObjectURL(file.raw);
+      window.console.log(res);
+      if (res.code == 200) {
+        this.avatarURL = res.data.file_path;
+      }
     },
     beforeAvatarUpload(file) {
       const isJPG = file.type === "image/jpeg";
@@ -252,6 +304,72 @@ export default {
         this.$message.error("上传头像图片大小不能超过 2MB!");
       }
       return isJPG && isLt2M;
+    },
+
+    // 获取用户验证码
+    getERcode() {
+      if (reg1.test(this.registerForm.phone) == false) {
+        return this.$message.error("手机号不对");
+      }
+      if (this.registerForm.code.length != 4) {
+        return this.$message.error("图形码必须是四位");
+      }
+
+      if (this.delayed == "") {
+        this.delayed = 10;
+        var timeID = setInterval(() => {
+          this.delayed--;
+          this.btnMessage = `${this.delayed}秒后发送`;
+          if (this.delayed == 0) {
+            this.delayed = "";
+            this.btnMessage = "发送验证码";
+            clearInterval(timeID);
+          }
+        }, 1000);
+      }
+
+      sendsms({
+        phone: this.registerForm.phone,
+        code: this.registerForm.code
+      }).then(res => {
+        window.console.log(res);
+        if (res.data.code == 200) {
+          this.$message.success(`${res.data.data.captcha}`);
+          this.rcode = res.data.data.captcha;
+        } else {
+          this.$message.error("图形码不正确");
+        }
+      });
+    },
+
+    // 登录注册表单验证
+    loginSuccess(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          // 验证成功,调用接口上传表单
+          register({
+            username: this.registerForm.nickname,
+            phone: this.registerForm.phone,
+            email: this.registerForm.email,
+            avatar: this.avatarURL,
+            password: this.registerForm.password,
+            rcode: this.registerForm.rcode
+          }).then(res => {
+            window.console.log(res);
+            // 登录成功,关闭对话框
+            this.$alert('注册成功', '恭喜!!!', {
+          confirmButtonText: '确定',
+          callback: () => {
+            this.dialogFormVisible= false;
+          }
+        });
+          });
+        } else {
+          // 验证失败
+          this.$message.error("请填写完整哟~~~~");
+          return false;
+        }
+      });
     }
   }
 };
@@ -373,6 +491,7 @@ export default {
     .codeImg {
       width: 143px;
       height: 41px;
+      cursor: pointer;
     }
   }
 }
