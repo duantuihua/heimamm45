@@ -235,6 +235,8 @@ export default {
     };
   },
   methods: {
+
+    // 登录
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
@@ -253,6 +255,9 @@ export default {
             window.console.log(res);
             if (res.data.code == 200) {
               this.$message.success("登陆成功");
+              // 把服务器返回的 token 保存到本地
+              localStorage.setItem('token',res.data.data.token);
+              this.$router.push('/index');
               return;
             }
             if (res.data.message == "验证码错误") {
