@@ -37,7 +37,56 @@
           <el-table-column prop="address" label="地址"></el-table-column>
         </el-table>
       </div>
+      <!-- 分页插件 -->
+      <div class="block">
+        <el-pagination
+          background
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="currentPage4"
+          :page-sizes="[100, 200, 300, 400]"
+          :page-size="100"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="400"
+        ></el-pagination>
+      </div>
     </el-card>
+
+    <!-- 新增用户弹出框 -->
+    <el-dialog title="新增用户" :visible.sync="dialogFormVisible">
+      <el-form :model="form" ref="ruleForm" :rules="userRules">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="userNumber">
+          <el-input v-model="form.userName" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="userName">
+          <el-input v-model="form.userEmail" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" :label-width="formLabelWidth">
+          <el-input v-model="form.userPhone" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="角色" :label-width="formLabelWidth">
+          <el-select v-model="form.userRole" placeholder="请选择角色">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态" :label-width="formLabelWidth">
+          <el-select v-model="form.userState" placeholder="请选择状态">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="用户备注" :label-width="formLabelWidth">
+          <el-input v-model="form.userRemarks" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -45,32 +94,67 @@
 export default {
   data() {
     return {
+      // 分页
+      currentPage1: 5,
+      currentPage2: 5,
+      currentPage3: 5,
+      currentPage4: 4,
       formInline: {
         user: "",
         region: ""
       },
-      tableData: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1517 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }]
+      tableData: [
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄"
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1517 弄"
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1519 弄"
+        },
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1516 弄"
+        }
+      ],
+      // 新增学科弹出框
+      dialogFormVisible: false,
+      // 新增学科弹出框表单
+      form: {
+        userName: "",
+        userEmail: "",
+        userPhone: "",
+        userRole: "",
+        usertate: "",
+        userRemarks: ""
+      },
+      formLabelWidth: "100px",
+      userRules: {
+        subNumber: [
+          { required: true, message: "请输入学科编号", trigger: "blur" },
+          { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
+        ]
+      }
     };
   },
   methods: {
     onSubmit() {
       window.console.log("submit!");
+    },
+    // 分页的方法
+    handleSizeChange(val) {
+      window.console.log(`每页 ${val} 条`);
+    },
+    handleCurrentChange(val) {
+      window.console.log(`当前页: ${val}`);
     }
   }
 };
@@ -123,6 +207,39 @@ export default {
       .space-between {
         margin: 0 9px;
       }
+    }
+  }
+  .block {
+    .el-pagination {
+      width: 550px;
+      margin: 30px auto 22px;
+    }
+  }
+  // 学科弹出框
+  .el-dialog {
+    width: 478px;
+    height: 555px;
+    .el-dialog__header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 53px;
+      padding: 0;
+      line-height: 53px;
+      background-color: #409eff;
+      font-size: 18px;
+      font-family: Microsoft YaHei;
+      font-weight: bold;
+      .el-dialog__title {
+        color: rgba(255, 255, 255, 1);
+      }
+      .el-icon-close {
+        color: #ffffff;
+      }
+    }
+    .dialog-footer {
+      width: 160px;
+      margin: 0 auto;
     }
   }
 }
