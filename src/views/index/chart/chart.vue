@@ -1,239 +1,167 @@
 <template>
-  <div class="chart">
+  <div class="user">
     <!-- 搜索表单 -->
     <el-card class="box-card">
       <div class="card">
-        <!-- 搜索表单 -->
-        <el-form :inline="true" :model="formInline" class="demo-form-inline" ref="searchForm">
-          <el-form-item label="学科编号" class="subjectNumber" prop="subjectNumber">
-            <el-input v-model="formInline.subjectNumber"></el-input>
+        <el-form :inline="true" :model="formInline" class="demo-form-inline">
+          <el-form-item label="用户名称" class="subjectNumber">
+            <el-input v-model="formInline.user"></el-input>
           </el-form-item>
 
-          <el-form-item label="学科名称" class="subjectName" prop="subjectName">
-            <el-input v-model="formInline.subjectName"></el-input>
+          <el-form-item label="用户邮箱" class="subjectName">
+            <el-input v-model="formInline.user"></el-input>
           </el-form-item>
 
-          <el-form-item label="创建者" class="creator" prop="creator">
-            <el-input v-model="formInline.creator"></el-input>
-          </el-form-item>
-
-          <el-form-item label="状态" class="state" prop="status">
-            <el-select v-model="formInline.status" placeholder="请选择状态">
-              <el-option label="禁用" value="0"></el-option>
-              <el-option label="启用" value="1"></el-option>
+          <el-form-item label="角色" class="state">
+            <el-select v-model="formInline.region" placeholder="请选择状态">
+              <el-option label="区域一" value="shanghai"></el-option>
+              <el-option label="区域二" value="beijing"></el-option>
             </el-select>
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" @click="subSearch">搜索</el-button>
+            <el-button type="primary">搜索</el-button>
             <el-button @click="onSubmit">清除</el-button>
-            <el-button
-              type="primary"
-              class="el-icon-plus"
-              @click="$refs.addForm.dialogFormVisible = true"
-            >新增学科</el-button>
+            <el-button type="primary" class="el-icon-plus" @click="dialogFormVisible = true">新增用户</el-button>
           </el-form-item>
         </el-form>
       </div>
     </el-card>
 
-    <!-- 卡片盒子 -->
+    <!-- 表格卡片 -->
     <el-card class="table-card">
-      <!-- 学科表格组件 -->
       <div class="table">
-        <el-table :data="tableData" style="width: 100%">
-          <el-table-column type="index" width="180" label="序号"></el-table-column>
-          <el-table-column prop="rid" label="学科编号" width="180"></el-table-column>
-          <el-table-column prop="short_name" label="简称"></el-table-column>
-          <el-table-column prop="username" label="创建者"></el-table-column>
-          <el-table-column prop="create_time" label="创建日期"></el-table-column>
-          <el-table-column prop="status" label="状态">
-            <template slot-scope="statusScope">
-              <span v-if="statusScope.row.status == 1">启用</span>
-              <span v-else id="red">禁用</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作">
-            <template slot-scope="scope">
-              <!-- <span @click="handleEdit(scope.$index, scope.row)">编辑</span> -->
-              <span @click="handleEdit(scope.$index, scope.row)">编辑</span>
-              <span
-                @click="handleDisable(scope.$index, scope.row)"
-                class="space-between"
-                v-if="scope.row.status==0"
-              >启用</span>
-              <span
-                @click="handleDisable(scope.$index, scope.row)"
-                class="space-between"
-                v-if="scope.row.status==1"
-              >禁用</span>
-              <span @click="handleDelete(scope.$index, scope.row)">删除</span>
-            </template>
-          </el-table-column>
+        <el-table :data="tableData" border style="width: 100%">
+          <el-table-column prop="date" label="日期" width="180"></el-table-column>
+          <el-table-column prop="name" label="姓名" width="180"></el-table-column>
+          <el-table-column prop="address" label="地址"></el-table-column>
         </el-table>
       </div>
-      <!-- 分页 -->
+      <!-- 分页插件 -->
       <div class="block">
         <el-pagination
           background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="currentPage4"
-          :page-sizes="pageSizes"
+          :page-sizes="[100, 200, 300, 400]"
           :page-size="100"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="total"
+          :total="400"
         ></el-pagination>
       </div>
     </el-card>
-    <!-- 新增学科弹出框 -->
-    <addForm ref="addForm"></addForm>
-    <!-- 编辑学科弹出框 -->
-    <editForm ref="editForm"></editForm>
+
+    <!-- 新增用户弹出框 -->
+    <el-dialog title="新增用户" :visible.sync="dialogFormVisible">
+      <el-form :model="form" ref="ruleForm" :rules="userRules">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="userNumber">
+          <el-input v-model="form.userName" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="userName">
+          <el-input v-model="form.userEmail" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" :label-width="formLabelWidth">
+          <el-input v-model="form.userPhone" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="角色" :label-width="formLabelWidth">
+          <el-select v-model="form.userRole" placeholder="请选择角色">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态" :label-width="formLabelWidth">
+          <el-select v-model="form.userState" placeholder="请选择状态">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="用户备注" :label-width="formLabelWidth">
+          <el-input v-model="form.userRemarks" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-// 导入组件
-import addForm from "./components/addForm";
-import editForm from "./components/editForm";
-
-import { subjectList, subjectStatus, subjectRemove } from "@/api/subject";
-
 export default {
-  // 挂在组件
-  components: {
-    // editForm
-    addForm,
-    editForm
-  },
-  created() {
-    // 页面一加载,请求学科列表
-    this.getSubList();
-  },
   data() {
     return {
-      tableData: [],
-      total: 0, // 数据总条数
       // 分页
-      currentPage4: 1, // 页面一加载, 默认显示的页数
-      page: "1", // 当前页
-      limit: "3", // 每页消息数
-      pageSizes:[3,6,9],
+      currentPage1: 5,
+      currentPage2: 5,
+      currentPage3: 5,
+      currentPage4: 4,
       formInline: {
-        subjectNumber: "", // 学科编号
-        subjectName: "", // 学科名称
-        creator: "", // 创建者
-        status: "" // 状态
+        user: "",
+        region: ""
+      },
+      tableData: [
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄"
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1517 弄"
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1519 弄"
+        },
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1516 弄"
+        }
+      ],
+      // 新增学科弹出框
+      dialogFormVisible: false,
+      // 新增学科弹出框表单
+      form: {
+        userName: "",
+        userEmail: "",
+        userPhone: "",
+        userRole: "",
+        usertate: "",
+        userRemarks: ""
+      },
+      formLabelWidth: "100px",
+      userRules: {
+        subNumber: [
+          { required: true, message: "请输入学科编号", trigger: "blur" },
+          { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
+        ]
       }
     };
   },
   methods: {
+    onSubmit() {
+      window.console.log("submit!");
+    },
     // 分页的方法
     handleSizeChange(val) {
       window.console.log(`每页 ${val} 条`);
-      this.limit = val;
-      this.getSubList();
     },
     handleCurrentChange(val) {
       window.console.log(`当前页: ${val}`);
-      this.page = val;
-      this.getSubList();
-    },
-
-    // 编辑学科
-    handleEdit(index, row) {
-      // window.console.log(index, row);
-      this.$refs.editForm.dialogFormVisible = true;
-      // 把当前行的信息传递给学科编辑框
-      // 进行深拷贝
-      this.$refs.editForm.editForm = JSON.parse(JSON.stringify(row));
-    },
-    // 删除学科
-    handleDelete(index, row) {
-      // window.console.log(index, row);
-      subjectRemove({ id: row.id }).then(res => {
-        // window.console.log(res);
-        if (res.code == 200) {
-          this.getSubList();
-          this.$notify.success({
-            title: "删除成功"
-          });
-        } else {
-          this.$notify.error({
-            title: "删除失败"
-          });
-        }
-      });
-    },
-    // 禁用
-    handleDisable(index, row) {
-      // window.console.log(index, row);
-      if (row.status == 1) {
-        subjectStatus({ id: row.id, status: 0 }).then(res => {
-          // window.console.log(res);
-          if (res.code == 200) {
-            // 提示用户
-            this.$message({
-              message: "状态已切换为禁用",
-              type: "error"
-            });
-            this.getSubList();
-          }
-        });
-      }
-      if (row.status == 0) {
-        subjectStatus({ id: row.id, status: 1 }).then(res => {
-          // window.console.log(res);
-          if (res.code == 200) {
-            this.$message.success("状态已切换为启用");
-            this.getSubList();
-          }
-        });
-      }
-    },
-    // 学科搜索
-    subSearch() {
-      subjectList({
-        page: this.page, // 当前页
-        limit: this.limit, // 每页消息数量
-        rid: this.formInline.subjectNumber,
-        name: this.formInline.subjectName,
-        username: this.formInline.creator,
-        status: this.formInline.status
-      }).then(res => {
-        this.tableData = res.data.items;
-      });
-    },
-    // 清空搜索
-    onSubmit() {
-      this.$refs.searchForm.resetFields();
-      this.getSubList();
-    },
-    // 封装获取学科列表的方法
-    getSubList() {
-      subjectList({
-        page: this.page, // 当前页
-        limit: this.limit // 每页消息数量
-      }).then(res => {
-        // window.console.log(res);
-        this.tableData = res.data.items;
-        this.total = res.data.pagination.total;
-      });
     }
   }
 };
 </script>
 
 <style lang="less">
-.chart {
-  background: rgba(232, 233, 236, 1);
-  height: 100%;
-
-  // 学科编号
-  .el-card__body {
-    padding: 0;
-  }
+.user {
   .box-card {
     box-sizing: border-box;
     .card {
@@ -268,7 +196,7 @@ export default {
     }
   }
 
-  //  卡片盒子
+  // 表格
   .table-card {
     margin-top: 20px;
     .table {
@@ -276,26 +204,21 @@ export default {
         color: #46a0ff;
         cursor: pointer;
       }
-      #red {
-        color: red;
-      }
       .space-between {
         margin: 0 9px;
       }
     }
-    // 分页
-    .block {
-      .el-pagination {
-        width: 550px;
-        margin: 30px auto 22px;
-      }
+  }
+  .block {
+    .el-pagination {
+      width: 550px;
+      margin: 30px auto 22px;
     }
   }
-
   // 学科弹出框
   .el-dialog {
-    width: 600px;
-    height: 510px;
+    width: 478px;
+    height: 555px;
     .el-dialog__header {
       display: flex;
       justify-content: center;
