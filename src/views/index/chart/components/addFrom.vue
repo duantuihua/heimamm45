@@ -28,7 +28,7 @@
 
 <script>
 // 新增学科接口
-import { addSubject, subjectList } from "@/api/subject";
+import { addSubject } from "@/api/subject";
 
 export default {
   data() {
@@ -62,6 +62,7 @@ export default {
       }
     };
   },
+
   methods: {
     // 点击提交
     btnAddSubject() {
@@ -73,11 +74,15 @@ export default {
             if (res.code == 200) {
               // 添加成功,关闭弹窗
               this.$message.success("添加成功");
+              // 新增成功,调用学科列表接口更新数据
+
               this.dialogFormVisible = false;
               // 清空表单
               this.resetForm();
-            } else {
-              this.$message.error("添加失败");
+              return;
+            }
+            if (res.code == 201) {
+              return this.$message.error("学科编号重复");
             }
           });
         } else {
@@ -91,15 +96,6 @@ export default {
     resetForm() {
       this.$refs.ruleForm.resetFields();
     }
-  },
-  created() {
-    // 页面一加载,请求学科列表
-    subjectList({
-      page: 1, // 当前页
-      limit: 10 // 每页消息数量
-    }).then(res => {
-      window.console.log(res);
-    });
   }
 };
 </script>

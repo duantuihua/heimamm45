@@ -41,8 +41,37 @@
       <!-- 新增学科弹出框 -->
       <addFrom ref="addFrom"></addFrom>
       <!-- 学科表格组件 -->
-      <subTable ref="subTable"></subTable>
-
+      <div class="table">
+        <el-table :data="tableData" style="width: 100%">
+          <el-table-column type="index" width="180" label="序号"></el-table-column>
+          <el-table-column prop="rid" label="学科编号" width="180"></el-table-column>
+          <el-table-column prop="short_name" label="简称"></el-table-column>
+          <el-table-column prop="username" label="创建者"></el-table-column>
+          <el-table-column prop="create_time" label="创建日期"></el-table-column>
+          <el-table-column prop="status" label="状态">
+            <template slot-scope="statusScope">
+              <span v-if="statusScope.row.status == 1">启用</span>
+              <span v-else id="red">禁用</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <span @click="handleEdit(scope.$index, scope.row)">编辑</span>
+              <span
+                @click="handleDisable(scope.$index, scope.row)"
+                class="space-between"
+                v-if="scope.row.status==0"
+              >启用</span>
+              <span
+                @click="handleDisable(scope.$index, scope.row)"
+                class="space-between"
+                v-if="scope.row.status==1"
+              >禁用</span>
+              <span @click="handleDelete(scope.$index, scope.row)">删除</span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
       <!-- 分页 -->
       <div class="block">
         <el-pagination
@@ -63,21 +92,30 @@
 <script>
 // 导入组件
 import addFrom from "./components/addFrom";
-import subTable from "./components/subTable";
+
+import { subjectList, subjectStatus } from "@/api/subject";
 
 export default {
   // 挂在组件
   components: {
-    addFrom,
-    subTable
+    addFrom
+  },
+  created() {
+    // 页面一加载,请求学科列表
+    this.getSubList();
   },
   data() {
     return {
+      tableData: [],
       // 分页
       currentPage1: 5,
       currentPage2: 5,
       currentPage3: 5,
       currentPage4: 4,
+
+      page: "1", // 当前页
+      limit: "6", // 每页消息数
+
       formInline: {
         user: "",
         region: ""
@@ -86,7 +124,7 @@ export default {
   },
   methods: {
     onSubmit() {
-      window.console.log("submit!");
+      window.console.log(111);
     },
 
     // 分页的方法
@@ -95,6 +133,50 @@ export default {
     },
     handleCurrentChange(val) {
       window.console.log(`当前页: ${val}`);
+    },
+
+    // 表格方法
+    handleEdit(index, row) {
+      window.console.log(index, row);
+    },
+    handleDelete(index, row) {
+      window.console.log(index, row);
+    },
+    // 禁用
+    handleDisable(index, row) {
+      // window.console.log(index, row);
+      if (row.status == 1) {
+        subjectStatus({ id: row.id, status: 0 }).then(res => {
+          window.console.log(res);
+          if (res.code == 200) {
+            // 提示用户
+            this.$message({
+              message: "状态已切换为禁用",
+              type: "error"
+            });
+            this.getSubList();
+          }
+        });
+      }
+      if (row.status == 0) {
+        subjectStatus({ id: row.id, status: 1 }).then(res => {
+          window.console.log(res);
+          if (res.code == 200) {
+            this.$message.success('状态已切换为启用');
+            this.getSubList();
+          }
+        });
+      }
+    },
+    // 封装获取学科列表的方法
+    getSubList() {
+      subjectList({
+        page: this.page, // 当前页
+        limit: this.limit // 每页消息数量
+      }).then(res => {
+        window.console.log(res);
+        this.tableData = res.data.items;
+      });
     }
   }
 };
@@ -150,6 +232,9 @@ export default {
       .cell span {
         color: #46a0ff;
         cursor: pointer;
+      }
+      #red {
+        color: red;
       }
       .space-between {
         margin: 0 9px;
