@@ -79,10 +79,10 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="currentPage4"
-          :page-sizes="[100, 200, 300, 400]"
+          :page-sizes="pageSizes"
           :page-size="100"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="400"
+          :total="total"
         ></el-pagination>
       </div>
     </el-card>
@@ -114,14 +114,12 @@ export default {
   data() {
     return {
       tableData: [],
+      total: 0, // 数据总条数
       // 分页
-      currentPage1: 5,
-      currentPage2: 5,
-      currentPage3: 5,
-      currentPage4: 4,
+      currentPage4: 1, // 页面一加载, 默认显示的页数
       page: "1", // 当前页
-      limit: "6", // 每页消息数
-
+      limit: "3", // 每页消息数
+      pageSizes:[3,6,9],
       formInline: {
         subjectNumber: "", // 学科编号
         subjectName: "", // 学科名称
@@ -134,9 +132,13 @@ export default {
     // 分页的方法
     handleSizeChange(val) {
       window.console.log(`每页 ${val} 条`);
+      this.limit = val;
+      this.getSubList();
     },
     handleCurrentChange(val) {
       window.console.log(`当前页: ${val}`);
+      this.page = val;
+      this.getSubList();
     },
 
     // 编辑学科
@@ -216,6 +218,7 @@ export default {
       }).then(res => {
         // window.console.log(res);
         this.tableData = res.data.items;
+        this.total = res.data.pagination.total;
       });
     }
   }
