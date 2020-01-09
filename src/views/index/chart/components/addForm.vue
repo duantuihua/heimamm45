@@ -8,13 +8,13 @@
       <el-form-item label="学科名称" :label-width="formLabelWidth" prop="name">
         <el-input v-model="form.name" autocomplete="off"></el-input>
       </el-form-item>
-      <el-form-item label="学科简称" :label-width="formLabelWidth">
+      <el-form-item label="学科简称" :label-width="formLabelWidth" prop="short_name">
         <el-input v-model="form.short_name" autocomplete="off"></el-input>
       </el-form-item>
-      <el-form-item label="学科简介" :label-width="formLabelWidth">
+      <el-form-item label="学科简介" :label-width="formLabelWidth" prop="intro">
         <el-input v-model="form.intro" autocomplete="off"></el-input>
       </el-form-item>
-      <el-form-item label="学科备注" :label-width="formLabelWidth">
+      <el-form-item label="学科备注" :label-width="formLabelWidth" prop="remark">
         <el-input v-model="form.remark" autocomplete="off"></el-input>
       </el-form-item>
     </el-form>
@@ -70,15 +70,15 @@ export default {
         if (valid) {
           // 验证成功,发送请求
           addSubject(this.form).then(res => {
-            window.console.log(res);
+            // window.console.log(res);
             if (res.code == 200) {
               // 添加成功,关闭弹窗
               this.$message.success("添加成功");
               // 新增成功,调用学科列表接口更新数据
-
-              this.dialogFormVisible = false;
+              this.$parent.getSubList();
               // 清空表单
-              this.resetForm();
+              this.$refs.ruleForm.resetFields();
+              this.dialogFormVisible = false;
               return;
             }
             if (res.code == 201) {
@@ -90,11 +90,6 @@ export default {
           return false;
         }
       });
-    },
-
-    // 清空表单
-    resetForm() {
-      this.$refs.ruleForm.resetFields();
     }
   }
 };

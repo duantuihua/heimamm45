@@ -3,33 +3,34 @@
     <!-- 搜索表单 -->
     <el-card class="box-card">
       <div class="card">
-        <el-form :inline="true" :model="formInline" class="demo-form-inline">
-          <el-form-item label="学科编号" class="subjectNumber">
-            <el-input v-model="formInline.user"></el-input>
+        <!-- 搜索表单 -->
+        <el-form :inline="true" :model="formInline" class="demo-form-inline" ref="searchForm">
+          <el-form-item label="学科编号" class="subjectNumber" prop="subjectNumber">
+            <el-input v-model="formInline.subjectNumber"></el-input>
           </el-form-item>
 
-          <el-form-item label="学科名称" class="subjectName">
-            <el-input v-model="formInline.user"></el-input>
+          <el-form-item label="学科名称" class="subjectName" prop="subjectName">
+            <el-input v-model="formInline.subjectName"></el-input>
           </el-form-item>
 
-          <el-form-item label="创建者" class="creator">
-            <el-input v-model="formInline.user"></el-input>
+          <el-form-item label="创建者" class="creator" prop="creator">
+            <el-input v-model="formInline.creator"></el-input>
           </el-form-item>
 
-          <el-form-item label="状态" class="state">
-            <el-select v-model="formInline.region" placeholder="请选择状态">
-              <el-option label="区域一" value="shanghai"></el-option>
-              <el-option label="区域二" value="beijing"></el-option>
+          <el-form-item label="状态" class="state" prop="status">
+            <el-select v-model="formInline.status" placeholder="请选择状态">
+              <el-option label="禁用" value="0"></el-option>
+              <el-option label="启用" value="1"></el-option>
             </el-select>
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary">搜索</el-button>
+            <el-button type="primary" @click="subSearch">搜索</el-button>
             <el-button @click="onSubmit">清除</el-button>
             <el-button
               type="primary"
               class="el-icon-plus"
-              @click="$refs.addFrom.dialogFormVisible = true"
+              @click="$refs.addForm.dialogFormVisible = true"
             >新增学科</el-button>
           </el-form-item>
         </el-form>
@@ -38,8 +39,6 @@
 
     <!-- 卡片盒子 -->
     <el-card class="table-card">
-      <!-- 新增学科弹出框 -->
-      <addFrom ref="addFrom"></addFrom>
       <!-- 学科表格组件 -->
       <div class="table">
         <el-table :data="tableData" style="width: 100%">
@@ -56,6 +55,7 @@
           </el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
+              <!-- <span @click="handleEdit(scope.$index, scope.row)">编辑</span> -->
               <span @click="handleEdit(scope.$index, scope.row)">编辑</span>
               <span
                 @click="handleDisable(scope.$index, scope.row)"
@@ -86,19 +86,26 @@
         ></el-pagination>
       </div>
     </el-card>
+    <!-- 新增学科弹出框 -->
+    <addForm ref="addForm"></addForm>
+    <!-- 编辑学科弹出框 -->
+    <editForm ref="editForm"></editForm>
   </div>
 </template>
 
 <script>
 // 导入组件
-import addFrom from "./components/addFrom";
+import addForm from "./components/addForm";
+import editForm from "./components/editForm";
 
-import { subjectList, subjectStatus } from "@/api/subject";
+import { subjectList, subjectStatus, subjectRemove } from "@/api/subject";
 
 export default {
   // 挂在组件
   components: {
-    addFrom
+    // editForm
+    addForm,
+    editForm
   },
   created() {
     // 页面一加载,请求学科列表
@@ -112,21 +119,18 @@ export default {
       currentPage2: 5,
       currentPage3: 5,
       currentPage4: 4,
-
       page: "1", // 当前页
       limit: "6", // 每页消息数
 
       formInline: {
-        user: "",
-        region: ""
+        subjectNumber: "", // 学科编号
+        subjectName: "", // 学科名称
+        creator: "", // 创建者
+        status: "" // 状态
       }
     };
   },
   methods: {
-    onSubmit() {
-      window.console.log(111);
-    },
-
     // 分页的方法
     handleSizeChange(val) {
       window.console.log(`每页 ${val} 条`);
@@ -135,19 +139,37 @@ export default {
       window.console.log(`当前页: ${val}`);
     },
 
-    // 表格方法
+    // 编辑学科
     handleEdit(index, row) {
-      window.console.log(index, row);
+      // window.console.log(index, row);
+      this.$refs.editForm.dialogFormVisible = true;
+      // 把当前行的信息传递给学科编辑框
+      // 进行深拷贝
+      this.$refs.editForm.editForm = JSON.parse(JSON.stringify(row));
     },
+    // 删除学科
     handleDelete(index, row) {
-      window.console.log(index, row);
+      // window.console.log(index, row);
+      subjectRemove({ id: row.id }).then(res => {
+        // window.console.log(res);
+        if (res.code == 200) {
+          this.getSubList();
+          this.$notify.success({
+            title: "删除成功"
+          });
+        } else {
+          this.$notify.error({
+            title: "删除失败"
+          });
+        }
+      });
     },
     // 禁用
     handleDisable(index, row) {
       // window.console.log(index, row);
       if (row.status == 1) {
         subjectStatus({ id: row.id, status: 0 }).then(res => {
-          window.console.log(res);
+          // window.console.log(res);
           if (res.code == 200) {
             // 提示用户
             this.$message({
@@ -160,13 +182,31 @@ export default {
       }
       if (row.status == 0) {
         subjectStatus({ id: row.id, status: 1 }).then(res => {
-          window.console.log(res);
+          // window.console.log(res);
           if (res.code == 200) {
-            this.$message.success('状态已切换为启用');
+            this.$message.success("状态已切换为启用");
             this.getSubList();
           }
         });
       }
+    },
+    // 学科搜索
+    subSearch() {
+      subjectList({
+        page: this.page, // 当前页
+        limit: this.limit, // 每页消息数量
+        rid: this.formInline.subjectNumber,
+        name: this.formInline.subjectName,
+        username: this.formInline.creator,
+        status: this.formInline.status
+      }).then(res => {
+        this.tableData = res.data.items;
+      });
+    },
+    // 清空搜索
+    onSubmit() {
+      this.$refs.searchForm.resetFields();
+      this.getSubList();
     },
     // 封装获取学科列表的方法
     getSubList() {
@@ -174,7 +214,7 @@ export default {
         page: this.page, // 当前页
         limit: this.limit // 每页消息数量
       }).then(res => {
-        window.console.log(res);
+        // window.console.log(res);
         this.tableData = res.data.items;
       });
     }
