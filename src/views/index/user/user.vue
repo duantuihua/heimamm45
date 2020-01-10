@@ -111,6 +111,44 @@
         <el-button type="primary" @click="addUser">确 定</el-button>
       </div>
     </el-dialog>
+
+    <!-- 编辑用户弹出框 -->
+    <el-dialog title="编辑用户" :visible.sync="dialogEditFormVisible">
+      <el-form :model="editForm" ref="editForm" :rules="editRules">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+          <el-input v-model="editForm.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+          <el-input v-model="editForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" :label-width="formLabelWidth" prop="phone">
+          <el-input v-model="editForm.phone" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="角色" :label-width="formLabelWidth" prop="role">
+          <el-select v-model="editForm.role" placeholder="请选择角色">
+            <el-option label="管理员" value="2"></el-option>
+            <el-option label="老师" value="3"></el-option>
+            <el-option label="学生" value="4"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态" :label-width="formLabelWidth" prop="status">
+          <el-select v-model="editForm.status" placeholder="请选择状态">
+            <!-- form.usertate 绑定的是 option 的 value 值 -->
+            <el-option label="禁用" value="0"></el-option>
+            <el-option label="启用" value="1"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="用户备注" :label-width="formLabelWidth" prop="remark">
+          <el-input v-model="editForm.remark" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogEditFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitEdit">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -141,7 +179,13 @@ let validatePhone = (rule, value, callback) => {
 };
 
 // 导入接口
-import { addUser, userList, userSstatus, userRemove } from "@/api/user";
+import {
+  addUser,
+  userList,
+  userSstatus,
+  userRemove,
+  userEdit
+} from "@/api/user";
 
 export default {
   data() {
@@ -160,7 +204,9 @@ export default {
       tableData: [],
       // 新增学科弹出框
       dialogFormVisible: false,
-      // 新增学科弹出框表单
+      // 编辑学科弹出框
+      dialogEditFormVisible: false,
+      // 新增用户弹出框表单
       form: {
         userName: "",
         userEmail: "",
@@ -168,6 +214,15 @@ export default {
         userRole: "",
         usertate: "",
         userRemarks: ""
+      },
+      // 编辑用户
+      editForm: {
+        username: "",
+        email: "",
+        phone: "",
+        role: "",
+        status: "",
+        remark: ""
       },
       formLabelWidth: "100px",
       userRules: {
@@ -185,6 +240,19 @@ export default {
           { required: true, message: "请输入角色", trigger: "change" }
         ],
         usertate: [{ message: "请输入角色", trigger: "change" }]
+      },
+      editRules: {
+        userName: [
+          { required: true, message: "请输入用户名", trigger: "change" },
+          { min: 2, max: 5, message: "长度在 2 到 5 个字符", trigger: "change" }
+        ],
+        email: [
+          { required: true, validator: validateEmail, trigger: "change" }
+        ],
+        phone: [
+          { required: true, validator: validatePhone, trigger: "change" }
+        ],
+        role: [{ required: true, message: "请输入角色", trigger: "change" }]
       }
     };
   },
@@ -243,8 +311,25 @@ export default {
         // window.console.log(this.tableData);
       });
     },
+    // 编辑用户
     handleEdit(index, row) {
       window.console.log(index, row);
+      this.dialogEditFormVisible = true;
+      // 进行深拷贝
+      this.editForm = JSON.parse(JSON.stringify(row));
+    },
+    // 编辑提交
+    submitEdit() {
+      userEdit(this.editForm).then(res => {
+        window.console.log(res);
+        if (res.code==200) {
+          this.$message.success('编辑成功');
+          this.getUserList();
+          this.dialogEditFormVisible = false;
+        } else {
+          this.$message.error('编辑失败了!!!');
+        }
+      });
     },
     // 删除用户
     handleDelete(index, row) {
