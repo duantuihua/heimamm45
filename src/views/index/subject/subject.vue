@@ -55,7 +55,6 @@
           </el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
-              <!-- <span @click="handleEdit(scope.$index, scope.row)">编辑</span> -->
               <span @click="handleEdit(scope.$index, scope.row)">编辑</span>
               <span
                 @click="handleDisable(scope.$index, scope.row)"
@@ -160,7 +159,7 @@ export default {
           if (this.tableData.length == 1) {
             this.page--;
             // 如果是最后一页
-            
+
             if (this.page == 0) {
               this.page = 1;
             }

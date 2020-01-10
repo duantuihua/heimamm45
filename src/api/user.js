@@ -5,7 +5,7 @@ import axios from 'axios';
 // 2. 创建user请求对象
 const userRequest = axios.create({
     // 设置基地址
-    baseURL = process.env.VUE_APP_BASEURL
+    baseURL : process.env.VUE_APP_BASEURL
 })
 
 // 3.添加请求拦截器
@@ -24,7 +24,7 @@ userRequest.interceptors.request.use(
 
 // 添加响应拦截器
 userRequest.interceptors.response.use(
-    function (config) {
+    function (response) {
         // 处理data中的 .data
         return response.data;
     },

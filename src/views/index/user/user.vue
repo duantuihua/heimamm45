@@ -32,14 +32,31 @@
     <el-card class="table-card">
       <div class="table">
         <el-table :data="tableData" border style="width: 100%">
-          <el-table-column prop="date" label="序号" width="180"></el-table-column>
-          <el-table-column prop="name" label="用户名" width="180"></el-table-column>
-          <el-table-column prop="address" label="电话"></el-table-column>
-          <el-table-column prop="address" label="邮箱"></el-table-column>
-          <el-table-column prop="address" label="角色"></el-table-column>
-          <el-table-column prop="address" label="备注"></el-table-column>
-          <el-table-column prop="address" label="状态"></el-table-column>
-          <el-table-column prop="address" label="操作"></el-table-column>
+          <el-table-column type="index" label="序号" width="180"></el-table-column>
+          <el-table-column prop="username" label="用户名" width="180"></el-table-column>
+          <el-table-column prop="phone" label="电话"></el-table-column>
+          <el-table-column prop="email" label="邮箱"></el-table-column>
+          <el-table-column prop="role" label="角色"></el-table-column>
+          <el-table-column prop="remark" label="备注"></el-table-column>
+          <el-table-column prop="status" label="状态">
+            <template slot-scope="scope">
+              <span v-if="scope.row.status == 1">启用</span>
+              <span v-else>禁用</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作">
+            <!-- 插槽的使用 -->
+            <template slot-scope="scope">
+              <span @click="handleEdit(scope.$index, scope.row)">编辑</span>
+              <span
+                @click="handleDisabled(scope.$index, scope.row)"
+                class="space disable"
+                v-if="scope.row.status==1"
+              >禁用</span>
+              <span @click="handleDisabled(scope.$index, scope.row)" class="space" v-else>启用</span>
+              <span @click="handleDelete(scope.$index, scope.row)">删除</span>
+            </template>
+          </el-table-column>
         </el-table>
       </div>
       <!-- 分页插件 -->
@@ -59,47 +76,79 @@
 
     <!-- 新增用户弹出框 -->
     <el-dialog title="新增用户" :visible.sync="dialogFormVisible">
-      <el-form :model="form" ref="ruleForm" :rules="userRules">
-        <el-form-item label="用户名" :label-width="formLabelWidth" prop="userNumber">
+      <el-form :model="form" ref="userForm" :rules="userRules">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="userName">
           <el-input v-model="form.userName" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="userName">
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="userEmail">
           <el-input v-model="form.userEmail" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="电话" :label-width="formLabelWidth">
+        <el-form-item label="电话" :label-width="formLabelWidth" prop="userPhone">
           <el-input v-model="form.userPhone" autocomplete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="角色" :label-width="formLabelWidth">
+        <el-form-item label="角色" :label-width="formLabelWidth" prop="userRole">
           <el-select v-model="form.userRole" placeholder="请选择角色">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+            <el-option label="管理员" value="2"></el-option>
+            <el-option label="老师" value="3"></el-option>
+            <el-option label="学生" value="4"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="状态" :label-width="formLabelWidth">
-          <el-select v-model="form.userState" placeholder="请选择状态">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+        <el-form-item label="状态" :label-width="formLabelWidth" prop="usertate">
+          <el-select v-model="form.usertate" placeholder="请选择状态">
+            <!-- form.usertate 绑定的是 option 的 value 值 -->
+            <el-option label="禁用" value="0"></el-option>
+            <el-option label="启用" value="1"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="用户备注" :label-width="formLabelWidth">
+        <el-form-item label="用户备注" :label-width="formLabelWidth" prop="userRemarks">
           <el-input v-model="form.userRemarks" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button type="primary" @click="addUser">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
+// 邮箱正则
+let userEmailReg = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+// 手机正则
+let userPhoneReg = /^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/;
+// 邮箱验证
+let validateEmail = (rule, value, callback) => {
+  if (value === "") {
+    callback(new Error("请输入邮箱"));
+  } else if (userEmailReg.test(value) == false) {
+    callback(new Error("邮箱格式不正确"));
+  } else {
+    callback();
+  }
+};
+// 手机验证
+let validatePhone = (rule, value, callback) => {
+  if (value === "") {
+    callback(new Error("请输入手机号"));
+  } else if (userPhoneReg.test(value) == false) {
+    callback(new Error("手机号码不正确"));
+  } else {
+    callback();
+  }
+};
+
+// 导入接口
+import { addUser, userList, userSstatus } from "@/api/user";
+
 export default {
   data() {
     return {
       // 分页
+      total: "", // 总页数
+      page: "", // 当前页
       currentPage1: 5,
       currentPage2: 5,
       currentPage3: 5,
@@ -122,14 +171,106 @@ export default {
       },
       formLabelWidth: "100px",
       userRules: {
-        subNumber: [
-          { required: true, message: "请输入学科编号", trigger: "blur" },
-          { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
-        ]
+        userName: [
+          { required: true, message: "请输入用户名", trigger: "change" },
+          { min: 2, max: 5, message: "长度在 2 到 5 个字符", trigger: "change" }
+        ],
+        userEmail: [
+          { required: true, validator: validateEmail, trigger: "change" }
+        ],
+        userPhone: [
+          { required: true, validator: validatePhone, trigger: "change" }
+        ],
+        userRole: [
+          { required: true, message: "请输入角色", trigger: "change" }
+        ],
+        usertate: [{ message: "请输入角色", trigger: "change" }]
       }
     };
   },
+  created() {
+    this.getUserList();
+  },
   methods: {
+    // 添加用户
+    addUser() {
+      this.dialogFormVisible = true;
+      this.$refs.userForm.validate(valid => {
+        if (valid) {
+          // 验证通过,调用接口
+          addUser({
+            username: this.form.userName,
+            email: this.form.userEmail,
+            phone: this.form.userPhone,
+            role_id: this.form.userRole,
+            status: this.form.usertate,
+            remark: this.form.userRemarks
+          }).then(res => {
+            window.console.log(res);
+            if (res.code == 200) {
+              this.$message.success("用户新增成功");
+              // 关闭弹窗
+              this.dialogFormVisible = false;
+              // 获取用户列表刷新页面
+              this.getUserList();
+              // 清空表单
+              this.$refs.userForm.resetFields();
+              return;
+            }
+            if (res.code == 201) {
+              this.$message.warning("添加失败");
+            }
+          });
+        } else {
+          // 验证失败
+          this.$message.error("输入的格式不正确");
+          return false;
+        }
+      });
+    },
+    // 获取用户列表
+    getUserList() {
+      userList({
+        page: 1,
+        limit: 6
+      }).then(res => {
+        // window.console.log(res);
+        if (res.code == 200) {
+          this.tableData = res.data.items;
+          // this.total = res.pagination.total;
+          // this.page = res.pagination.page;
+        }
+        // window.console.log(this.tableData);
+      });
+    },
+    handleEdit(index, row) {
+      window.console.log(index, row);
+    },
+    handleDelete(index, row) {
+      window.console.log(index, row);
+    },
+    // 状态切换
+    handleDisabled(index, row) {
+      window.console.log(index, row);
+      if (row.status == 1) {
+        userSstatus({ id: row.id }).then(res => {
+          window.console.log(res);
+          if (res.code == 200) {
+            this.$message.warning("状态切换成功,当前为禁用");
+            this.getUserList();
+          }
+        });
+      } else {
+        userSstatus({ id: row.id }).then(res => {
+          window.console.log(res);
+          if (res.code == 200) {
+            this.$message.success("状态切换成功,当前为启用");
+            this.getUserList();
+          }
+        });
+      }
+    },
+
     onSubmit() {
       window.console.log("submit!");
     },
@@ -187,6 +328,12 @@ export default {
       .cell span {
         color: #46a0ff;
         cursor: pointer;
+      }
+      .cell .space {
+        padding: 0 9px;
+      }
+      .cell .disable {
+        color: red;
       }
       .space-between {
         margin: 0 9px;
