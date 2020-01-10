@@ -3,24 +3,25 @@
     <!-- 搜索表单 -->
     <el-card class="box-card">
       <div class="card">
-        <el-form :inline="true" :model="formInline" class="demo-form-inline">
+        <el-form :inline="true" :model="formInline" class="demo-form-inline" ref="clear">
           <el-form-item label="用户名称" class="subjectNumber">
-            <el-input v-model="formInline.user"></el-input>
+            <el-input v-model="formInline.username"></el-input>
           </el-form-item>
 
           <el-form-item label="用户邮箱" class="subjectName">
-            <el-input v-model="formInline.user"></el-input>
+            <el-input v-model="formInline.email"></el-input>
           </el-form-item>
 
           <el-form-item label="角色" class="state">
-            <el-select v-model="formInline.region" placeholder="请选择状态">
-              <el-option label="区域一" value="shanghai"></el-option>
-              <el-option label="区域二" value="beijing"></el-option>
+            <el-select v-model="formInline.role_id" placeholder="请选择状态">
+              <el-option label="管理员" value="2"></el-option>
+              <el-option label="老师" value="3"></el-option>
+              <el-option label="学生" value="4"></el-option>
             </el-select>
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary">搜索</el-button>
+            <el-button type="primary" @click="userSearch">搜索</el-button>
             <el-button @click="onSubmit">清除</el-button>
             <el-button type="primary" class="el-icon-plus" @click="dialogFormVisible = true">新增用户</el-button>
           </el-form-item>
@@ -65,11 +66,11 @@
           background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="currentPage4"
-          :page-sizes="[100, 200, 300, 400]"
-          :page-size="100"
+          :current-page="1"
+          :page-sizes="[3, 6, 9]"
+          :page-size="limit"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="400"
+          :total="total"
         ></el-pagination>
       </div>
     </el-card>
@@ -191,17 +192,15 @@ export default {
   data() {
     return {
       // 分页
-      total: "", // 总页数
-      page: "", // 当前页
-      currentPage1: 5,
-      currentPage2: 5,
-      currentPage3: 5,
-      currentPage4: 4,
-      formInline: {
-        user: "",
-        region: ""
-      },
+      total: 0, //
+      limit: 6,
+      page: 1, // 当前页
       tableData: [],
+      formInline: {
+        username: "",
+        email: "",
+        role_id: ""
+      },
       // 新增学科弹出框
       dialogFormVisible: false,
       // 编辑学科弹出框
@@ -299,14 +298,14 @@ export default {
     // 获取用户列表
     getUserList() {
       userList({
-        page: 1,
-        limit: 6
+        page: this.page,
+        limit: this.limit
       }).then(res => {
-        // window.console.log(res);
+        window.console.log(res);
         if (res.code == 200) {
           this.tableData = res.data.items;
-          // this.total = res.pagination.total;
-          // this.page = res.pagination.page;
+          this.total = res.data.pagination.total;
+          this.page = res.data.pagination.page;
         }
         // window.console.log(this.tableData);
       });
@@ -322,12 +321,12 @@ export default {
     submitEdit() {
       userEdit(this.editForm).then(res => {
         window.console.log(res);
-        if (res.code==200) {
-          this.$message.success('编辑成功');
+        if (res.code == 200) {
+          this.$message.success("编辑成功");
           this.getUserList();
           this.dialogEditFormVisible = false;
         } else {
-          this.$message.error('编辑失败了!!!');
+          this.$message.error("编辑失败了!!!");
         }
       });
     },
@@ -337,6 +336,11 @@ export default {
       userRemove({ id: row.id }).then(res => {
         window.console.log(res);
         if (res.code == 200) {
+          // 如果是最后一页的最后一条消息,删除后应该请求上一页的数据,因为当前页已经没有数据了
+          // 代码执行到这里,虽然数据库中的数据已经被删除了,但是页面中 tableData的是还没有变化的
+          if (this.tableData.length == 1) {
+            this.page--;
+          }
           this.getUserList();
           this.$notify({
             title: "删除成功",
@@ -371,16 +375,36 @@ export default {
         });
       }
     },
-
+    // 用户搜索
+    userSearch() {
+      userList({
+        page: this.page,
+        limit: this.limit,
+        ...this.formInline
+      }).then(res => {
+        window.console.log(res);
+        if (res.code == 200) {
+          // 为表格重新赋值满足条件的数组
+          this.tableData = res.data.items;
+        }
+      });
+    },
+    // 清除搜索
     onSubmit() {
-      window.console.log("submit!");
+      // 清空列表
+      this.$refs.clear.resetFields();
+      this.getUserList();
     },
     // 分页的方法
     handleSizeChange(val) {
       window.console.log(`每页 ${val} 条`);
+      this.limit = val;
+      this.getUserList();
     },
     handleCurrentChange(val) {
       window.console.log(`当前页: ${val}`);
+      this.page = val;
+      this.getUserList();
     }
   }
 };
