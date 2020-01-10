@@ -141,7 +141,7 @@ let validatePhone = (rule, value, callback) => {
 };
 
 // 导入接口
-import { addUser, userList, userSstatus } from "@/api/user";
+import { addUser, userList, userSstatus, userRemove } from "@/api/user";
 
 export default {
   data() {
@@ -246,15 +246,31 @@ export default {
     handleEdit(index, row) {
       window.console.log(index, row);
     },
+    // 删除用户
     handleDelete(index, row) {
       window.console.log(index, row);
+      userRemove({ id: row.id }).then(res => {
+        window.console.log(res);
+        if (res.code == 200) {
+          this.getUserList();
+          this.$notify({
+            title: "删除成功",
+            type: "success"
+          });
+        } else {
+          this.$notify({
+            title: "删除失败",
+            type: "error"
+          });
+        }
+      });
     },
     // 状态切换
     handleDisabled(index, row) {
-      window.console.log(index, row);
+      // window.console.log(index, row);
       if (row.status == 1) {
         userSstatus({ id: row.id }).then(res => {
-          window.console.log(res);
+          // window.console.log(res);
           if (res.code == 200) {
             this.$message.warning("状态切换成功,当前为禁用");
             this.getUserList();
@@ -262,7 +278,7 @@ export default {
         });
       } else {
         userSstatus({ id: row.id }).then(res => {
-          window.console.log(res);
+          // window.console.log(res);
           if (res.code == 200) {
             this.$message.success("状态切换成功,当前为启用");
             this.getUserList();
