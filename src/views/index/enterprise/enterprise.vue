@@ -3,17 +3,17 @@
     <!-- 卡片盒子 -->
     <el-card class="form_card">
       <!-- 企业表单 -->
-      <el-form :inline="true" :model="formInline" class="demo-form-inline">
-        <el-form-item label="企业编号" class="number">
+      <el-form :inline="true" :model="formInline" class="demo-form-inline" ref="enterpriseForm">
+        <el-form-item label="企业编号" class="number" prop="eid">
           <el-input v-model="formInline.eid" placeholder="企业编号"></el-input>
         </el-form-item>
-        <el-form-item label="企业名称" class="name">
+        <el-form-item label="企业名称" class="name" prop="name">
           <el-input v-model="formInline.name" placeholder="企业名称"></el-input>
         </el-form-item>
-        <el-form-item label="创建者" class="user">
+        <el-form-item label="创建者" class="user" prop="username">
           <el-input v-model="formInline.username" placeholder="创建者"></el-input>
         </el-form-item>
-        <el-form-item label="状态" class="status">
+        <el-form-item label="状态" class="status" prop="status">
           <el-select v-model="formInline.status" placeholder="请选择状态">
             <el-option label="启用" value="1"></el-option>
             <el-option label="禁用" value="0"></el-option>
@@ -21,7 +21,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSubmit">搜索</el-button>
-          <el-button @click="onSubmit">清除</el-button>
+          <el-button @click="clear">清除</el-button>
           <el-button
             type="primary"
             @click="$refs.addEnterprise.dialogFormVisible = true"
@@ -66,11 +66,11 @@
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-        :current-page="currentPage4"
-        :page-sizes="[100, 200, 300, 400]"
-        :page-size="100"
+        :current-page="currentPage"
+        :page-sizes="[3, 6, 9]"
+        :page-size="limit"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="400"
+        :total="total"
       ></el-pagination>
     </el-card>
 
@@ -103,12 +103,10 @@ export default {
   data() {
     return {
       // 分页
-      page: 1,
-      limit: 6,
-      currentPage1: 5,
-      currentPage2: 5,
-      currentPage3: 5,
-      currentPage4: 4,
+      currentPage: 1, // 每次请求,显示的都是第一页
+      total: 0, // 消息总条数
+      page: 1, // 当前请求页
+      limit: 3, // 每页请求的消息条数
       // 企业表单数据
       formInline: {
         eid: "", // 企业编号
@@ -129,6 +127,8 @@ export default {
       }).then(res => {
         // window.console.log(res);
         this.tableData = res.data.items;
+        this.page = res.data.pagination.page;
+        this.total = res.data.pagination.total;
       });
     },
     //状态切换
@@ -195,22 +195,33 @@ export default {
         limit: this.limit, // 页尺寸
         ...this.formInline
       }).then(res => {
-        window.console.log(res);
+        // window.console.log(res);
         if (res.code == 200) {
           // 表格数据
           this.tableData = res.data.items;
           this.page = res.data.pagination.page;
           this.total = res.data.pagination.total;
         } else {
-          this.$message.error('搜索失败')
+          this.$message.error("搜索失败");
         }
       });
     },
+    // 清除
+    clear() {
+      this.getList();
+      // 清空表单
+      this.$refs.enterpriseForm.resetFields();
+    },
+
     handleSizeChange(val) {
-      window.console.log(`每页 ${val} 条`);
+      // window.console.log(`每页 ${val} 条`);
+      this.limit = val;
+      this.getList();
     },
     handleCurrentChange(val) {
-      window.console.log(`当前页: ${val}`);
+      // window.console.log(`当前页: ${val}`);
+      this.page = val;
+      this.getList();
     }
   }
 };

@@ -4,15 +4,15 @@
     <el-card class="box-card">
       <div class="card">
         <el-form :inline="true" :model="formInline" class="demo-form-inline" ref="clear">
-          <el-form-item label="用户名称" class="subjectNumber">
+          <el-form-item label="用户名称" class="subjectNumber" prop="username">
             <el-input v-model="formInline.username"></el-input>
           </el-form-item>
 
-          <el-form-item label="用户邮箱" class="subjectName">
+          <el-form-item label="用户邮箱" class="subjectName" prop="email">
             <el-input v-model="formInline.email"></el-input>
           </el-form-item>
 
-          <el-form-item label="角色" class="state">
+          <el-form-item label="角色" class="state" prop="role_id">
             <el-select v-model="formInline.role_id" placeholder="请选择状态">
               <el-option label="管理员" value="2"></el-option>
               <el-option label="老师" value="3"></el-option>
