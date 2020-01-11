@@ -5,18 +5,18 @@
       <!-- 企业表单 -->
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
         <el-form-item label="企业编号" class="number">
-          <el-input v-model="formInline.user" placeholder="企业编号"></el-input>
+          <el-input v-model="formInline.eid" placeholder="企业编号"></el-input>
         </el-form-item>
         <el-form-item label="企业名称" class="name">
-          <el-input v-model="formInline.user" placeholder="企业名称"></el-input>
+          <el-input v-model="formInline.name" placeholder="企业名称"></el-input>
         </el-form-item>
         <el-form-item label="创建者" class="user">
-          <el-input v-model="formInline.user" placeholder="创建者"></el-input>
+          <el-input v-model="formInline.username" placeholder="创建者"></el-input>
         </el-form-item>
         <el-form-item label="状态" class="status">
-          <el-select v-model="formInline.region" placeholder="请选择状态">
-            <el-option label="启用" value="shanghai"></el-option>
-            <el-option label="禁用" value="beijing"></el-option>
+          <el-select v-model="formInline.status" placeholder="请选择状态">
+            <el-option label="启用" value="1"></el-option>
+            <el-option label="禁用" value="0"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -111,8 +111,10 @@ export default {
       currentPage4: 4,
       // 企业表单数据
       formInline: {
-        user: "",
-        region: ""
+        eid: "", // 企业编号
+        name: "", // 企业名称
+        username: "", // 创建者
+        status: "" // 状态
       },
       // 表格数据
       tableData: []
@@ -186,8 +188,23 @@ export default {
       });
     },
 
+    // 企业搜索
     onSubmit() {
-      window.console.log("submit!");
+      enterpriseList({
+        page: this.page, // 页码
+        limit: this.limit, // 页尺寸
+        ...this.formInline
+      }).then(res => {
+        window.console.log(res);
+        if (res.code == 200) {
+          // 表格数据
+          this.tableData = res.data.items;
+          this.page = res.data.pagination.page;
+          this.total = res.data.pagination.total;
+        } else {
+          this.$message.error('搜索失败')
+        }
+      });
     },
     handleSizeChange(val) {
       window.console.log(`每页 ${val} 条`);
