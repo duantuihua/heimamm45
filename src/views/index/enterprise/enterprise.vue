@@ -83,7 +83,12 @@
 // 导入新增企业组件
 import addEnterprise from "./components/addEnterprise";
 // 导入接口
-import { enterpriseList, enterpriseStatus } from "@/api/enterprise";
+import {
+  enterpriseList,
+  enterpriseStatus,
+  enterpriseRemove
+} from "@/api/enterprise";
+import { type } from "os";
 export default {
   // 注册组件
   components: {
@@ -123,12 +128,11 @@ export default {
     },
     //状态切换
     disabled(index, row) {
-      window.console.log(index, row);
+      // window.console.log(index, row);
       if (row.status == 1) {
         enterpriseStatus({
           id: row.id
         }).then(res => {
-          window.console.log(res);
           if (res.code == 200) {
             this.getList();
             this.$message.error("状态切换成功,当前状态为禁用");
@@ -140,7 +144,6 @@ export default {
         enterpriseStatus({
           id: row.id
         }).then(res => {
-          window.console.log(res);
           if (res.code == 200) {
             this.getList();
             this.$message.success("状态切换成功,当前状态为启用");
@@ -156,7 +159,25 @@ export default {
     },
     // 删除
     deleted(index, row) {
-      window.console.log(index, row);
+      // window.console.log(index, row);
+      enterpriseRemove({
+        id: row.id
+      }).then(res => {
+        window.console.log(res);
+        if (res.code == 200) {
+          // 刷新列表
+          this.getList();
+          this.$notify({
+            title: "删除成功",
+            type: "success"
+          });
+        } else {
+          this.$notify({
+            title: "删除失败",
+            type: "error"
+          });
+        }
+      });
     },
 
     onSubmit() {
