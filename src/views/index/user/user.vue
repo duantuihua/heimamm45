@@ -285,7 +285,7 @@ export default {
               return;
             }
             if (res.code == 201) {
-              this.$message.warning("添加失败");
+              this.$message.warning("用户已存在");
             }
           });
         } else {
@@ -301,13 +301,12 @@ export default {
         page: this.page,
         limit: this.limit
       }).then(res => {
-        window.console.log(res);
+        // window.console.log(res);
         if (res.code == 200) {
           this.tableData = res.data.items;
           this.total = res.data.pagination.total;
           this.page = res.data.pagination.page;
         }
-        // window.console.log(this.tableData);
       });
     },
     // 编辑用户
@@ -397,12 +396,12 @@ export default {
     },
     // 分页的方法
     handleSizeChange(val) {
-      window.console.log(`每页 ${val} 条`);
+      // window.console.log(`每页 ${val} 条`);
       this.limit = val;
       this.getUserList();
     },
     handleCurrentChange(val) {
-      window.console.log(`当前页: ${val}`);
+      // window.console.log(`当前页: ${val}`);
       this.page = val;
       this.getUserList();
     }
