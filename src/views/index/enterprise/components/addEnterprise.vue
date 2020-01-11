@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="收货地址" :visible.sync="dialogFormVisible">
+  <el-dialog title="新增企业" :visible.sync="dialogFormVisible">
     <el-form :model="form" ref="addEnterprise" :rules="rules">
       <el-form-item label="企业编号" :label-width="formLabelWidth" prop="eid">
         <el-input v-model="form.eid" autocomplete="off"></el-input>
@@ -32,28 +32,7 @@ import { enterpriseAdd } from "@/api/enterprise";
 export default {
   data() {
     return {
-      gridData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄"
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄"
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄"
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄"
-        }
-      ],
+      
       dialogFormVisible: false,
       form: {
         eid: "", // 企业编号
@@ -110,6 +89,8 @@ export default {
             window.console.log(res);
             if (res.code == 200) {
               this.dialogFormVisible = false;
+              // 清空表单
+              this.$refs.addEnterprise.resetFields();
               // 调用接口刷新列表
               this.$parent.getList();
               this.$message.success("企业添加成功");
@@ -128,10 +109,6 @@ export default {
         }
       });
     },
-    // 表单清空
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
-    }
   }
 };
 </script>

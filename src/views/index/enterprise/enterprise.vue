@@ -76,23 +76,26 @@
 
     <!-- 新增企业组件 -->
     <addEnterprise ref="addEnterprise"></addEnterprise>
+    <editEnterprise ref="editEnterprise"></editEnterprise>
   </div>
 </template>
 
 <script>
 // 导入新增企业组件
 import addEnterprise from "./components/addEnterprise";
+// 企业编辑组件
+import editEnterprise from "./components/editEnterprise";
 // 导入接口
 import {
   enterpriseList,
   enterpriseStatus,
   enterpriseRemove
 } from "@/api/enterprise";
-import { type } from "os";
 export default {
   // 注册组件
   components: {
-    addEnterprise
+    addEnterprise,
+    editEnterprise
   },
   created() {
     this.getList();
@@ -156,6 +159,9 @@ export default {
     // 编辑
     edit(index, row) {
       window.console.log(index, row);
+      this.$refs.editEnterprise.dialogFormVisible = true;
+      // 深拷贝
+      this.$refs.editEnterprise.editForm = JSON.parse(JSON.stringify(row));
     },
     // 删除
     deleted(index, row) {
