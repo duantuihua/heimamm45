@@ -16,7 +16,7 @@
       </el-header>
 
       <el-container class="my-aside">
-      <!-- 侧边栏 -->
+        <!-- 侧边栏 -->
         <el-aside width="auto">
           <el-menu
             :default-active="$route.path"
@@ -26,23 +26,50 @@
             :collapse="isCollapse"
             router
           >
-            <el-menu-item index="/index/chart">
+            <!--数据预览  -->
+            <el-menu-item
+              index="/index/chart"
+              v-if="['超级管理员','管理员','老师'].includes(getUserInfo.role)==true"
+            >
               <i class="el-icon-pie-chart"></i>
               <span slot="title">数据预览</span>
             </el-menu-item>
-            <el-menu-item index="/index/user" >
+
+            <!-- 用户列表 -->
+            <el-menu-item
+              index="/index/user"
+              v-if="['超级管理员','管理员'].includes(getUserInfo.role) == true"
+            >
               <i class="el-icon-user"></i>
               <span slot="title">用户列表</span>
             </el-menu-item>
-            <el-menu-item index="/index/question">
+
+            <!-- 题库列表 -->
+            <el-menu-item
+              index="/index/question"
+              v-if="['超级管理员','管理员','老师'].includes(getUserInfo.role)==true"
+            >
               <i class="el-icon-edit"></i>
               <span slot="title">题库列表</span>
             </el-menu-item>
-            <el-menu-item index="/index/enterprise">
-              <i class="el-icon-office-building"></i>
+
+            <!-- 企业列表 -->
+            <el-menu-item
+              index="/index/enterprise"
+              v-if="['超级管理员','管理员'].includes(getUserInfo.role)==true"
+            >
+              <i
+                class="el-icon-office-building"
+                v-if="['超级管理员','管理员','老师'].includes(getUserInfo.role)==true"
+              ></i>
               <span slot="title">企业列表</span>
             </el-menu-item>
-            <el-menu-item index="/index/subject">
+
+            <!-- 学科列表 -->
+            <el-menu-item
+              index="/index/subject"
+              v-if="['超级管理员','管理员','老师','学生'].includes(getUserInfo.role)==true"
+            >
               <i class="el-icon-notebook-2"></i>
               <span slot="title">学科列表</span>
             </el-menu-item>
@@ -53,7 +80,6 @@
         <el-main>
           <router-view></router-view>
         </el-main>
-        
       </el-container>
     </el-container>
   </div>
@@ -95,7 +121,7 @@ export default {
             // 清空token,跳转到登录页
             if (res.data.code == 200) {
               localStorage.removeItem("token");
-              this.$router.push('/');
+              this.$router.push("/");
             }
           });
         })
@@ -105,6 +131,11 @@ export default {
             message: "退出已取消"
           });
         });
+    }
+  },
+  computed: {
+    getUserInfo() {
+      return this.$store.state.userinfo;
     }
   },
   created() {

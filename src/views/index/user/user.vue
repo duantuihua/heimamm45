@@ -37,8 +37,17 @@
           <el-table-column prop="username" label="用户名" width="180"></el-table-column>
           <el-table-column prop="phone" label="电话"></el-table-column>
           <el-table-column prop="email" label="邮箱"></el-table-column>
-          <el-table-column prop="role" label="角色"></el-table-column>
+
+          <el-table-column prop="role" label="角色">
+            <template slot-scope="scope">
+              <span v-if="scope.row.role_id==2">管理员</span>
+              <span v-else-if="scope.row.role_id==3">老师</span>
+              <span v-else-if="scope.row.role_id==4">学生</span>
+            </template>
+          </el-table-column>
+
           <el-table-column prop="remark" label="备注"></el-table-column>
+
           <el-table-column prop="status" label="状态">
             <template slot-scope="scope">
               <span v-if="scope.row.status == 1">启用</span>
@@ -55,7 +64,7 @@
                 v-if="scope.row.status==1"
               >禁用</span>
               <span @click="handleDisabled(scope.$index, scope.row)" class="space" v-else>启用</span>
-              <span @click="handleDelete(scope.$index, scope.row)">删除</span>
+              <span @click="handleDelete(scope.$index, scope.row)" v-if="['超级管理员'].includes($store.state.userinfo.role)==true">删除</span>
             </template>
           </el-table-column>
         </el-table>
@@ -126,18 +135,19 @@
           <el-input v-model="editForm.phone" autocomplete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="角色" :label-width="formLabelWidth" prop="role">
-          <el-select v-model="editForm.role" placeholder="请选择角色">
-            <el-option label="管理员" value="2"></el-option>
-            <el-option label="老师" value="3"></el-option>
-            <el-option label="学生" value="4"></el-option>
+        <el-form-item label="角色" :label-width="formLabelWidth" prop="role_id">
+          <el-select v-model="editForm.role_id" placeholder="请选择角色">
+            <el-option label="管理员" :value="2"></el-option>
+            <el-option label="老师" :value="3"></el-option>
+            <el-option label="学生" :value="4"></el-option>
           </el-select>
         </el-form-item>
+
         <el-form-item label="状态" :label-width="formLabelWidth" prop="status">
           <el-select v-model="editForm.status" placeholder="请选择状态">
             <!-- form.usertate 绑定的是 option 的 value 值 -->
-            <el-option label="禁用" value="0"></el-option>
-            <el-option label="启用" value="1"></el-option>
+            <el-option label="禁用" :value="0"></el-option>
+            <el-option label="启用" :value="1"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="用户备注" :label-width="formLabelWidth" prop="remark">
@@ -219,7 +229,7 @@ export default {
         username: "",
         email: "",
         phone: "",
-        role: "",
+        role_id: "",
         status: "",
         remark: ""
       },
@@ -251,7 +261,7 @@ export default {
         phone: [
           { required: true, validator: validatePhone, trigger: "change" }
         ],
-        role: [{ required: true, message: "请输入角色", trigger: "change" }]
+        role_id: [{ required: true, message: "请输入角色", trigger: "change" }]
       }
     };
   },
@@ -318,6 +328,7 @@ export default {
     },
     // 编辑提交
     submitEdit() {
+      window.console.log(this.editForm.role_id);
       userEdit(this.editForm).then(res => {
         window.console.log(res);
         if (res.code == 200) {

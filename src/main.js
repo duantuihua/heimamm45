@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router/index/index'
+import store from './store/index'
 
 // 导入 element-ui 插件
 import ElementUI from 'element-ui';
@@ -18,5 +19,6 @@ Vue.config.productionTip = false
 new Vue({
   render: h => h(App),
   // 在Vue 实例中挂载路由
-  router
+  router,
+  store
 }).$mount('#app')
